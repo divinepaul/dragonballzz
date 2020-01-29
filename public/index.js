@@ -35,7 +35,7 @@ function setName() {
 
 
 function initSocket(username) {
-    socket = new WebSocket("wss://" + window.location.hostname);
+    socket = new WebSocket("ws://" + window.location.hostname);
     socket.addEventListener("open", () => { onSocketOpen(username) });
     socket.addEventListener("message", (message) => { onMessageRecived(message) });
 }
@@ -61,13 +61,19 @@ function onMessageRecived(message) {
             addGameData(parsedMessage);
             break;
         case "newPlayer":
-            addNewPlayerToWaiting(parsedMessage,false);
+            addNewPlayerToWaiting(parsedMessage, false);
             break;
         case "waitingTimer":
             addWaitingTimer(parsedMessage);
             break;
         case "gameStart":
             startGame(parsedMessage);
+            break;
+        case "gameTimer":
+            updateGameTimer(parsedMessage);
+            break;
+        case "message":
+            console.log(parsedMessage);
     }
 }
 
@@ -89,8 +95,10 @@ function addNewPlayerToWaiting(playerDetails, isGameData) {
     container.appendChild(text);
 
     waitingPage.appendChild(container);
-    console.log(waitingPage);
+
 }
+
+
 
 function addWaitingTimer(timeDetails) {
     let timerText = document.querySelector(".waiting-timer");
@@ -98,15 +106,69 @@ function addWaitingTimer(timeDetails) {
 }
 
 function startGame(gameDetails) {
+    gameData = gameDetails;
     document.querySelector(".waiting-page").remove();
+    createPlayerElements(gameDetails);
+
+}
+
+function createPlayerElements(gameDetails) {
+    console.log(gameDetails);
+    let playerContainers = document.querySelector(".container-players");
+    gameDetails.payload.data.players.forEach((playerName) => {
+
+        let playerInfo = gameDetails.payload.data[playerName];
+
+        let playerDiv = document.createElement("div");
+        playerDiv.className = "player-container";
+        
+        let playerUserName = document.createElement("h1");
+        playerUserName.innerHTML = playerInfo.username;
+        playerUserName.className = "player-username";
+
+
+        let playerLoads = document.createElement("h1");
+        playerLoads.innerHTML = playerInfo.load;
+        playerLoads.className = "player-load";
+
+
+
+        let playerAction = document.createElement("h1");
+        playerAction.innerHTML = playerInfo.action;
+        playerAction.className = "player-action";
+
+        playerDiv.appendChild(playerUserName);
+        playerDiv.appendChild(playerLoads);
+        playerDiv.appendChild(playerAction);
+
+        playerContainers.appendChild(playerDiv);
+
+    });
 }
 
 function addGameData(gameDetails) {
-    gameData = gameData;
+    gameData = gameDetails;
     if (document.querySelector(".waiting-page")) {
         document.querySelector(".waiting-page-main-container").innerHTML = " ";
         gameDetails.players.forEach(player => {
-            addNewPlayerToWaiting(gameDetails[player],true);
+            addNewPlayerToWaiting(gameDetails[player], true);
         })
     }
+}
+
+function updateGameTimer(timeDetails) {
+    let timerText = document.querySelector(".playing-timer");
+    timerText.innerHTML = "time : " + timeDetails.payload.data;
+}
+
+function changeAction(action) {
+    let username = localStorage.getItem("username");
+    let actionData = {
+        type: "changeAction",
+        payload: {
+            username:username,
+            action: action
+        }
+    }
+    socket.send(JSON.stringify(actionData));
 }
