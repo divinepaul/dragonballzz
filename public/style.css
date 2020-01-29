@@ -32,3 +32,15 @@
     justify-content: center;
     background-color: #1d72f6;
 }
+.player-container{
+
+    height:10vh;
+    width:10vw;
+    color:white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: #1d72f6;
+    font-size:1vw;
+}
