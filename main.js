@@ -54,7 +54,7 @@ function addUser(username, ws) {
 
 
 
-    if ((gameData.players.indexOf(username)==-1)) {
+    if ((gameData.players.indexOf(username) == -1)) {
       clients.push(ws);
 
       let player = {
@@ -104,6 +104,7 @@ let waitingTimer;
 function startWaitingTimer(ws) {
 
   var sec = 30;
+
   if (waitingTimer) {
     clearInterval(waitingTimer);
   }
@@ -146,7 +147,7 @@ let gameTimer;
 function startGame() {
 
   let count = 7;
-  let gametTimer = setInterval(() => {
+  gameTimer = setInterval(() => {
     let gameTimeData = {
       type: "gameTimer",
       payload: {
@@ -277,69 +278,85 @@ function checkGame() {
 
     }
 
-
+    
   });
 
   console.log(gameData);
-  gameData.players.forEach((selplayerName,i) => {
+  gameData.players.forEach((selplayerName, i) => {
 
     let selPlayer = gameData[selplayerName];
     let selPlayerAction = selPlayer.action;
 
-    gameData.players.forEach((comPlayerName,j) => {
+    gameData.players.forEach((comPlayerName, j) => {
       let comPlayer = gameData[comPlayerName];
       let comPlayerAction = comPlayer.action;
 
-      switch(selPlayerAction){
+      switch (selPlayerAction) {
         case "load":
-          switch(comPlayerAction){
+          switch (comPlayerAction) {
             case "beam":
             case "punch":
             case "tornado":
             case "d-punch":
-              gameData.players.splice(i,1);
+              gameData.players.splice(i, 1);
               delete gameData[selplayerName];
           }
           break;
         case "block":
-          switch(comPlayerAction){
+          switch (comPlayerAction) {
             case "d-punch":
-              gameData.players.splice(i,1);
+              gameData.players.splice(i, 1);
               delete gameData[selplayerName];
 
           }
           break;
         case "beam":
-          switch(comPlayerAction){
+          switch (comPlayerAction) {
             case "punch":
             case "tornado":
             case "d-punch":
-              gameData.players.splice(i,1);
+              gameData.players.splice(i, 1);
               delete gameData[selplayerName];
 
           }
           break;
         case "punch":
-          switch(comPlayerAction){
+          switch (comPlayerAction) {
             case "tornado":
             case "d-punch":
-              gameData.players.splice(i,1);
+              gameData.players.splice(i, 1);
               delete gameData[selplayerName];
           }
           break;
         case "tornado":
-          switch(comPlayerAction){
+          switch (comPlayerAction) {
             case "d-punch":
-              gameData.players.splice(i,1);
+              gameData.players.splice(i, 1);
               delete gameData[selplayerName];
           }
           break;
       }
-      
+
     });
   });
 
-  
+  let gameUpdateData = {
+    type: "gameStart",
+    payload: {
+      data: gameData
+    }
+  }
+  wss.broadcast(JSON.stringify(gameUpdateData));
+
+
+  if (gameData.players.length < 2) {
+
+    clearInterval(gameTimer);
+    endGame();
+  }
+
+
+
 
 
 }
@@ -349,4 +366,37 @@ function changeAction(actionData) {
   let action = actionData.payload.action;
 
   gameData[username].action = action;
+}
+
+function endGame() {
+
+  let endGameResultData = {
+    type: "message",
+    payload: {
+      data: gameData.players[0] + " won the game."
+    }
+  }
+  wss.broadcast(JSON.stringify(endGameResultData));
+
+
+
+  let endGameData = {
+    type:"endGame",
+    payload:{
+      data : "game Ended"
+    }
+  }
+
+  wss.broadcast(JSON.stringify(endGameData));
+
+  clients.forEach(ws => {
+    ws.close();
+  })
+
+  gameStarted = false;
+
+  gameData = { type: "gameData", players: [] };
+
+  clients = [];
+
 }
