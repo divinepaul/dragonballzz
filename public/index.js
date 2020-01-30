@@ -35,7 +35,7 @@ function setName() {
 
 
 function initSocket(username) {
-    socket = new WebSocket("ws://" + window.location.hostname);
+    socket = new WebSocket("wss://" + window.location.hostname);
     socket.addEventListener("open", () => { onSocketOpen(username) });
     socket.addEventListener("message", (message) => { onMessageRecived(message) });
 }
