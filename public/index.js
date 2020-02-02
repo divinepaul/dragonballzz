@@ -9,7 +9,7 @@ function checkName() {
     if (username) {
 
         document.querySelector(".username-page").remove();
-        document.querySelector(".waiting-page").style.display = "block";
+        document.querySelector(".waiting-page").style.display = "flex";
         initSocket(username);
 
     }
@@ -24,7 +24,7 @@ function setName() {
         localStorage.setItem("username", value);
 
         document.querySelector(".username-page").remove();
-        document.querySelector(".waiting-page").style.display = "block";
+        document.querySelector(".waiting-page").style.display = "flex";
         initSocket(value);
 
     } else {
@@ -35,7 +35,7 @@ function setName() {
 
 
 function initSocket(username) {
-    socket = new WebSocket("wss://" + window.location.hostname);
+    socket = new WebSocket("ws://" + window.location.hostname);
     socket.addEventListener("open", () => { onSocketOpen(username) });
     socket.addEventListener("message", (message) => { onMessageRecived(message) });
 }
@@ -112,13 +112,12 @@ function addWaitingTimer(timeDetails) {
 function startGame(gameDetails) {
     gameData = gameDetails;
     document.querySelector(".waiting-page").style.display = "none";
-    document.querySelector(".playing-page").style.display = "block";
+    document.querySelector(".playing-page").style.display = "flex";
     createPlayerElements(gameDetails);
 
 }
 
 function createPlayerElements(gameDetails) {
-    console.log(gameDetails);
     let playerContainers = document.querySelector(".container-players");
     playerContainers.innerHTML = "";
     gameDetails.payload.data.players.forEach((playerName) => {
@@ -182,9 +181,13 @@ function changeAction(action) {
 function endGame(){
     document.querySelector(".playing-page").style.display = "none";
     let username = localStorage.getItem('username');
+    socket.close();
+    socket = null;
     initSocket(username);
-    document.querySelector(".waiting-page").style.display = "block";
+
+    document.querySelector(".waiting-page").style.display = "flex";
 }
+
 
 
 function addMessage(parsedMessage){
@@ -192,8 +195,8 @@ function addMessage(parsedMessage){
 
     containers.forEach(container=>{
         let text = document.createElement("h1");
-        text.innerHTML = parsedMessage.payload.data;
+        text.innerHTML = parsedMessage.payload.data + "<br><br>";
         container.appendChild(text);
-        container.scrollTop += 100;
+        container.scrollTop = container.scrollHeight;
     });
 }

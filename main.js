@@ -28,7 +28,6 @@ wss.on('connection', function (ws) {
 
   ws.on('message', function (recivedMessage) {
 
-    console.log('received: %s', recivedMessage);
 
     let parsedMessage = JSON.parse(recivedMessage);
 
@@ -82,7 +81,7 @@ function addUser(username, ws) {
         startWaitingTimer(ws);
       }
 
-      console.log(gameData);
+
 
     }
 
@@ -93,7 +92,7 @@ function addUser(username, ws) {
         data: username + " tried to join the server."
       }
     }
-    console.log(username + " tried to join the server.");
+
     wss.broadcast(JSON.stringify(messageData));
   }
 
@@ -146,7 +145,7 @@ function startWaitingTimer(ws) {
 let gameTimer;
 function startGame() {
 
-  let count = 7;
+  let count = 8;
   gameTimer = setInterval(() => {
     let gameTimeData = {
       type: "gameTimer",
@@ -278,10 +277,10 @@ function checkGame() {
 
     }
 
-    
+
   });
 
-  console.log(gameData);
+  let removedPlayers = [];
   gameData.players.forEach((selplayerName, i) => {
 
     let selPlayer = gameData[selplayerName];
@@ -298,15 +297,15 @@ function checkGame() {
             case "punch":
             case "tornado":
             case "d-punch":
-              gameData.players.splice(i, 1);
-              delete gameData[selplayerName];
+              removedPlayers.push(i);
+              sendKillMessage(selPlayer, comPlayer);
           }
           break;
         case "block":
           switch (comPlayerAction) {
             case "d-punch":
-              gameData.players.splice(i, 1);
-              delete gameData[selplayerName];
+              removedPlayers.push(i);
+              sendKillMessage(selPlayer, comPlayer);
 
           }
           break;
@@ -315,8 +314,9 @@ function checkGame() {
             case "punch":
             case "tornado":
             case "d-punch":
-              gameData.players.splice(i, 1);
-              delete gameData[selplayerName];
+              removedPlayers.push(i);
+              sendKillMessage(selPlayer, comPlayer);
+
 
           }
           break;
@@ -324,21 +324,30 @@ function checkGame() {
           switch (comPlayerAction) {
             case "tornado":
             case "d-punch":
-              gameData.players.splice(i, 1);
-              delete gameData[selplayerName];
+              removedPlayers.push(i);
+              sendKillMessage(selPlayer, comPlayer);
+
           }
           break;
         case "tornado":
           switch (comPlayerAction) {
             case "d-punch":
-              gameData.players.splice(i, 1);
-              delete gameData[selplayerName];
+              removedPlayers.push(i);
+              sendKillMessage(selPlayer, comPlayer);
           }
           break;
       }
 
     });
   });
+
+  
+  removedPlayers.forEach(index => {
+    let playerName = gameData.players[index];
+    gameData.players.splice(index, 1);
+    delete gameData[playerName];
+  });
+
 
   let gameUpdateData = {
     type: "gameStart",
@@ -356,16 +365,15 @@ function checkGame() {
   }
 
 
-
-
-
 }
 
 function changeAction(actionData) {
   let username = actionData.payload.username;
-  let action = actionData.payload.action;
+  if (gameData.players.indexOf(username) != -1) {
+    let action = actionData.payload.action;
 
-  gameData[username].action = action;
+    gameData[username].action = action;
+  }
 }
 
 function endGame() {
@@ -381,17 +389,17 @@ function endGame() {
 
 
   let endGameData = {
-    type:"endGame",
-    payload:{
-      data : "game Ended"
+    type: "endGame",
+    payload: {
+      data: "game Ended"
     }
   }
 
   wss.broadcast(JSON.stringify(endGameData));
 
-  clients.forEach(ws => {
-    ws.close();
-  })
+  wss.clients.forEach(client => {
+    client.close();
+  });
 
   gameStarted = false;
 
@@ -399,4 +407,16 @@ function endGame() {
 
   clients = [];
 
+}
+
+
+function sendKillMessage(selPlayer, comPlayer) {
+  let messageData = {
+    type: "message",
+    payload: {
+      data: selPlayer.username + " with " + selPlayer.action + " was " + comPlayer.action + "ed"
+    }
+  }
+
+  wss.broadcast(JSON.stringify(messageData));
 }
