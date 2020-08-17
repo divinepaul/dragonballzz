@@ -134,12 +134,19 @@ function addNewPlayerToWaiting(playerDetails, isGameData) {
     container.appendChild(text);
 
     waitingPage.appendChild(container);
+    
+    console.log(playerDetails);
 
-    var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    var getUserMedia = navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia ;
     getUserMedia({
         audio: true,
         video: false
     }, (mediaStream) =>{
+
+        console.log(playerDetails);
+        console.log(playerDetails.payload);
+        console.log(playerDetails.payload.data.peerId);
+
         var call = peer.call(playerDetails.payload.data.peerId,mediaStream);
         calls.push(call);
     }, (e)=>{
