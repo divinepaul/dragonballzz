@@ -147,7 +147,7 @@ function addNewPlayerToWaiting(playerDetails, isGameData) {
         console.log(playerDetails.payload);
         console.log(playerDetails.payload.data.peerId);
 
-        var call = peer.call(playerDetails.payload.data.peerId,mediaStream);
+        var call = peer.call(playerDetails.peerId,mediaStream);
         calls.push(call);
     }, (e)=>{
         alert("wtf dude?");
