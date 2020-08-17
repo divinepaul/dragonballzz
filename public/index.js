@@ -67,7 +67,9 @@ function onCall(call){
 }
 
 function onAudioRecive(stream){
-    new Audio().srcObject = stream;
+    console.log(stream);
+    let audio = new Audio().srcObject = stream;
+    audio.play();
 }
 
 function onSocketOpen(username) {
@@ -142,11 +144,6 @@ function addNewPlayerToWaiting(playerDetails, isGameData) {
         audio: true,
         video: false
     }, (mediaStream) =>{
-
-        console.log(playerDetails);
-        console.log(playerDetails.payload);
-        console.log(playerDetails.payload.data.peerId);
-
         var call = peer.call(playerDetails.peerId,mediaStream);
         calls.push(call);
     }, (e)=>{
