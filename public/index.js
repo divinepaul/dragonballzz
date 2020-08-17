@@ -4,7 +4,7 @@ let gameData;
 
 let messages = [];
 
-let peer = [];
+let peer;
 
 let calls = [];
 function checkName() {
@@ -42,13 +42,15 @@ function initSocket(username) {
     socket = new WebSocket("wss://" + window.location.hostname);
     socket.addEventListener("open", () => { onSocketOpen(username) });
     socket.addEventListener("message", (message) => { onMessageRecived(message) });
-    peer.on('call', (call) => {onCall(call)});
     peer = new Peer();
+    peer.on('call', (call) => {onCall(call)});
+    
 }
 
 
 function onCall(call){
-    navigator.getUserMedia({
+    var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    getUserMedia({
         audio: true,
         video: false
     }, (mediaStream) =>{
@@ -133,8 +135,8 @@ function addNewPlayerToWaiting(playerDetails, isGameData) {
 
     waitingPage.appendChild(container);
 
-    
-    navigator.getUserMedia({
+    var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    getUserMedia({
         audio: true,
         video: false
     }, (mediaStream) =>{
