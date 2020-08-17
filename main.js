@@ -35,7 +35,7 @@ wss.on('connection', function (ws) {
     switch (parsedMessage.type) {
 
       case "username":
-        addUser(parsedMessage.payload.data, ws);
+        addUser(parsedMessage.payload, ws);
         break;
       case "changeAction":
         changeAction(parsedMessage);
@@ -47,8 +47,9 @@ wss.on('connection', function (ws) {
 });
 
 
-function addUser(username, ws) {
-
+function addUser(payload, ws) {
+  let username =  payload.data;
+  let peerId = payload.peerId;
   if (!gameStarted) {
 
 
@@ -58,6 +59,7 @@ function addUser(username, ws) {
 
       let player = {
         username: username,
+        peerId:peerId,
         load: 1,
         action: "load",
         ws: (clients.length - 1)

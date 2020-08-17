@@ -3,6 +3,10 @@ let socket;
 let gameData;
 
 let messages = [];
+
+let peer = [];
+
+let calls = [];
 function checkName() {
     let username = localStorage.getItem('username');
 
@@ -38,19 +42,48 @@ function initSocket(username) {
     socket = new WebSocket("wss://" + window.location.hostname);
     socket.addEventListener("open", () => { onSocketOpen(username) });
     socket.addEventListener("message", (message) => { onMessageRecived(message) });
+    peer.on('call', (call) => {onCall(call)});
+    peer = new Peer();
+}
+
+
+function onCall(call){
+    navigator.getUserMedia({
+        audio: true,
+        video: false
+    }, (mediaStream) =>{
+
+
+       call.answer(mediaStream);
+    //    new Audio().srcObject = mediaStream;
+        call.on("stream",(stream) => onAudioRecive(stream));
+
+
+    }, (e)=>{
+        alert("wtf dude?")
+    });
+}
+
+function onAudioRecive(stream){
+    new Audio().srcObject = stream;
 }
 
 function onSocketOpen(username) {
+    peer.on('open', (id) => {
+        console.log('My peer ID is: ' + id);
+        let userData = {
 
-    let userData = {
-
-        type: "username",
-        payload: {
-            data: username,
-
+            type: "username",
+            payload: {
+                data: username,
+                peerId: id
+    
+            }
         }
-    }
-    socket.send(JSON.stringify(userData));
+        socket.send(JSON.stringify(userData));
+
+    });
+    
 
 }
 
@@ -99,6 +132,19 @@ function addNewPlayerToWaiting(playerDetails, isGameData) {
     container.appendChild(text);
 
     waitingPage.appendChild(container);
+
+    
+    navigator.getUserMedia({
+        audio: true,
+        video: false
+    }, (mediaStream) =>{
+        var call = peer.call(playerDetails.payload.data.peerId,mediaStream);
+        calls.push(call);
+    }, (e)=>{
+        alert("wtf dude?");
+    });
+    
+
 
 }
 
