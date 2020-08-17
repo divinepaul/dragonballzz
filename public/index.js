@@ -134,10 +134,10 @@ function addNewPlayerToWaiting(playerDetails, isGameData) {
     container.appendChild(text);
 
     waitingPage.appendChild(container);
-    
+
     console.log(playerDetails);
 
-    var getUserMedia = navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia ;
+    var getUserMedia =  navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia ;
     getUserMedia({
         audio: true,
         video: false
